@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Гра "Однорукий бандит"</title>
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      text-align: center;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: #ffffff;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin: 20px 0;
+      color: #ffeb3b;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    p {
+      font-size: 1.2rem;
+      margin: 10px 0;
+    }
+
+    .game-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+      outline: none;
+    }
+
+    #generate-btn {
+      background: #4caf50;
+      color: #ffffff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    #generate-btn:hover {
+      background: #45a049;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    #restart-btn {
+      background: #f44336;
+      color: #ffffff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    #restart-btn:hover {
+      background: #e53935;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .slots {
+      display: flex;
+      justify-content: center;
+      margin: 30px 0;
+    }
+
+    .slot-column {
+      width: 120px;
+      margin: 0 15px;
+    }
+
+    .slot-column img {
+      width: 100%;
+      height: auto;
+      border: 3px solid #ffeb3b;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease;
+    }
+
+    .slot-column img:hover {
+      transform: scale(1.1);
+    }
+
+    .result {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+
+    .result.success {
+      color: #4caf50;
+    }
+
+    .result.fail {
+      color: #f44336;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <h1 id="username"></h1>
+    <p id="attempt">Спроба 1 з 3</p>
+    <button id="generate-btn">Запустити</button>
+    <button id="restart-btn" style="display: none;">Грати знову</button>
+    <div class="slots" id="slots-container">
+      <div class="slot-column"></div>
+      <div class="slot-column"></div>
+      <div class="slot-column"></div>
+    </div>
+    <p class="result" id="result"></p>
+  </div>
+
+  <script>
+    const images = [
+      "10733271.png",
+      "rb_82727.png",
+      "rb_4040.png",
+      "37298557_8324150.png",
+      "rb_66040.png"
+    ];
+
+    const username = prompt("Введіть ваше ім'я:");
+    document.getElementById("username").textContent = `Гравець: ${username}`;
+
+    let attempt = 1;
+    let win = false;
+
+    const slotsContainer = document.getElementById("slots-container");
+    const generateButton = document.getElementById("generate-btn");
+    const restartButton = document.getElementById("restart-btn");
+    const attemptDisplay = document.getElementById("attempt");
+    const resultDisplay = document.getElementById("result");
+
+    function generateSlots() {
+      slotsContainer.innerHTML = "";
+      const columns = [[], [], []];
+
+      for (let i = 0; i < 3; i++) {
+        while (columns[i].length < 3) {
+          const randomIndex = Math.floor(Math.random() * images.length);
+          if (!columns[i].includes(randomIndex)) {
+            columns[i].push(randomIndex);
+          }
+        }
+      }
+
+      for (let i = 0; i < 3; i++) {
+        const columnDiv = document.createElement("div");
+        columnDiv.classList.add("slot-column");
+        columns[i].forEach(index => {
+          const img = document.createElement("img");
+          img.src = images[index];
+          columnDiv.appendChild(img);
+        });
+        slotsContainer.appendChild(columnDiv);
+      }
+
+      checkWin(columns);
+    }
+
+    function checkWin(columns) {
+      const firstRow = columns.map(column => column[0]);
+      if (firstRow.every(value => value === firstRow[0])) {
+        win = true;
+        resultDisplay.textContent = "Ви виграли!";
+        resultDisplay.classList.add("success");
+        generateButton.style.display = "none";
+        restartButton.style.display = "inline-block";
+      } else {
+        attempt++;
+        if (attempt > 3) {
+          resultDisplay.textContent = "Ви програли!";
+          resultDisplay.classList.add("fail");
+          generateButton.style.display = "none";
+          restartButton.style.display = "inline-block";
+        } else {
+          attemptDisplay.textContent = `Спроба ${attempt} з 3`;
+        }
+      }
+    }
+
+    generateButton.addEventListener("click", generateSlots);
+    restartButton.addEventListener("click", () => {
+      attempt = 1;
+      win = false;
+      attemptDisplay.textContent = `Спроба ${attempt} з 3`;
+      resultDisplay.textContent = "";
+      resultDisplay.className = "result";
+      generateButton.style.display = "inline-block";
+      restartButton.style.display = "none";
+      slotsContainer.innerHTML = "";
+    });
+  </script>
+</body>
+</html>
